@@ -48,7 +48,7 @@ public class [classNameServiceImpl] implements [classNameService] {
     }
 
     @Override
-    Object deleteByIds([idTypeName][] [idCName]s){
+    public Object deleteByIds([idTypeName][] [idCName]s){
         [classNameMapperLower].deleteByIds([idCName]s);
         log.info("[classNameEntityLower] deleteByIds success! [idCName]s={}",[idCName]s);
         return null;
