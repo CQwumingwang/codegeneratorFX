@@ -5,6 +5,7 @@ import com.wmw.generator.exception.GeneratorException;
 
 import java.io.*;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 /**
@@ -69,10 +70,10 @@ public class FileUtils {
      * @param fileName 文件名
      */
     public static void writeFile(String content,String packageStr,String fileName){
-        FileWriter writer = null;
+        BufferedWriter writer = null;
         try {
             String path = getFilePath(Parameters.DIRECTORY+packageStr.replace(".",File.separator),fileName);
-            writer = new FileWriter(path);
+            writer = new BufferedWriter (new OutputStreamWriter (new FileOutputStream (path,true), StandardCharsets.UTF_8));
             writer.write("");
             writer.write(content);
             writer.flush();
