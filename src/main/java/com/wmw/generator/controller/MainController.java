@@ -23,6 +23,13 @@ import java.util.Properties;
  * @Version 1.0
  */
 public class MainController {
+
+    @FXML/**自定义模板路径*/
+    public TextField tempDirectory;
+    @FXML/**导出模板按钮*/
+    public Button tempOutBtn;
+    @FXML/**浏览自定义模板按钮*/
+    public Button tempInBtn;
     @FXML
     /**浏览系统目录*/
     private Button browseBtn;
@@ -73,6 +80,7 @@ public class MainController {
             packageEntity.setText(properties.getProperty("packageEntity"));
             ignoreStrFirst.setText(properties.getProperty("ignoreStrFirst"));
             directory.setText(properties.getProperty("directory"));
+            tempDirectory.setText(properties.getProperty("tempDirectory"));
         }
     }
     /***
@@ -109,6 +117,28 @@ public class MainController {
         Parameters.PACKAGE_SERVICE_IMPL = canNotBeEmpty(packageServiceImpl.getText(),"SERVICE实现层包路径不能为空！");
         /**忽略的表名前缀*/
         Parameters.IGNORE_STR_FIRST = ignoreStrFirst.getText();
+        /**自定义模板路径*/
+        Parameters.TEMPLATE_PATH = tempDirectory.getText();
+        if(Parameters.TEMPLATE_PATH != null && Parameters.TEMPLATE_PATH.trim().length() != 0){
+            if(!Parameters.TEMPLATE_PATH.endsWith(File.separator)){
+                Parameters.TEMPLATE_PATH = Parameters.TEMPLATE_PATH + File.separator;
+            }
+            if(Parameters.ENTITY == null || Parameters.ENTITY.trim().length() == 0){
+                Parameters.ENTITY = Parameters.ENTITY_DEFAULT;
+            }
+            if(Parameters.MAPPER_CLASS == null || Parameters.MAPPER_CLASS.trim().length() == 0){
+                Parameters.MAPPER_CLASS = Parameters.MAPPER_CLASS_DEFAULT;
+            }
+            if(Parameters.MAPPER_XML == null || Parameters.MAPPER_XML.trim().length() == 0){
+                Parameters.MAPPER_XML = Parameters.MAPPER_XML_DEFAULT;
+            }
+            if(Parameters.SERVICE == null || Parameters.SERVICE.trim().length() == 0){
+                Parameters.SERVICE = Parameters.SERVICE_DEFAULT;
+            }
+            if(Parameters.SERVICE_IMPL == null || Parameters.SERVICE_IMPL.trim().length() == 0){
+                Parameters.SERVICE_IMPL = Parameters.SERVICE_IMPL_DEFAULT;
+            }
+        }
     }
 
     private String canNotBeEmpty(String str,String msg){
@@ -122,7 +152,11 @@ public class MainController {
     public void browseSystem(ActionEvent event) {
         DirectoryChooserBuilder builder = DirectoryChooserBuilder.create();
         builder.title("选择代码生成路径");
-        File file = new File(System.getProperty("user.dir"));
+        String path = System.getProperty("user.dir");
+        if(directory.getText() != null && directory.getText().trim().length() != 0){
+            path = directory.getText();
+        }
+        File file = new File(path);
         builder.initialDirectory(file);
         DirectoryChooser chooser = builder.build();
         File chosenDir = chooser.showDialog(new Stage());
@@ -163,10 +197,57 @@ public class MainController {
         }
     }
 
-    private void showMsg(String title,String content,Alert.AlertType type){
+    private Alert showMsg(String title,String content,Alert.AlertType type){
         Alert alert = new Alert(type);
         alert.setTitle(title);
         alert.setContentText(content);
         alert.show();
+        return alert;
+    }
+
+    /**
+     * 导出默认模板
+     * @param actionEvent
+     */
+    @FXML
+    public void tempOutBrowse(ActionEvent actionEvent) {
+        tempOutBtn.setDisable(true);
+        DirectoryChooserBuilder builder = DirectoryChooserBuilder.create();
+        builder.title("选择导出默认模板路径");
+        File file = new File(System.getProperty("user.dir"));
+        builder.initialDirectory(file);
+        DirectoryChooser chooser = builder.build();
+        File chosenDir = chooser.showDialog(new Stage());
+        if (chosenDir != null) {
+            String path = chosenDir.getAbsolutePath();
+            Alert alert = showMsg("导出模板","导出模板到"+path+"中......",Alert.AlertType.INFORMATION);
+            if(!path.endsWith(File.separator)){
+                path = path + File.separator;
+            }
+            FileUtils.exportTempFile(path);
+            alert.close();
+        }
+        tempOutBtn.setDisable(false);
+    }
+
+    /**
+     * 使用自定义模板
+     * @param actionEvent
+     */
+    @FXML
+    public void tempInBrowse(ActionEvent actionEvent) {
+        DirectoryChooserBuilder builder = DirectoryChooserBuilder.create();
+        builder.title("选择自定义模板路径");
+        String path = System.getProperty("user.dir");
+        if(tempDirectory.getText() != null && tempDirectory.getText().trim().length() != 0){
+            path = tempDirectory.getText();
+        }
+        File file = new File(path);
+        builder.initialDirectory(file);
+        DirectoryChooser chooser = builder.build();
+        File chosenDir = chooser.showDialog(new Stage());
+        if (chosenDir != null) {
+            tempDirectory.setText(chosenDir.getAbsolutePath());
+        }
     }
 }

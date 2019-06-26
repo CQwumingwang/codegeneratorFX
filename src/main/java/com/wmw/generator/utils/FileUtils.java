@@ -6,6 +6,7 @@ import com.wmw.generator.exception.GeneratorException;
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Properties;
 
 /**
@@ -34,7 +35,13 @@ public class FileUtils {
                 in = new InputStreamReader(location.openStream(),"UTF-8");
             }else{
                 File file = new File(fileName);
-                in = new InputStreamReader(new FileInputStream(file),"UTF-8");
+                if(file.exists()){
+                    in = new InputStreamReader(new FileInputStream(file),"UTF-8");
+                }else{
+                    FileUtils fu = new FileUtils();
+                    URL location = fu.getClass().getResource(Parameters.TEMPLATE_PATH_DEFAULT+defaultName);
+                    in = new InputStreamReader(location.openStream(),"UTF-8");
+                }
             }
             reader = new BufferedReader(in);
             String tempString = null;
@@ -149,6 +156,7 @@ public class FileUtils {
             properties.setProperty("packageEntity", Parameters.PACKAGE_ENTITY);
             properties.setProperty("ignoreStrFirst", Parameters.IGNORE_STR_FIRST);
             properties.setProperty("directory", Parameters.DIRECTORY);
+            properties.setProperty("tempDirectory", Parameters.TEMPLATE_PATH);
             properties.store(oFile, "");
         } catch (IOException e) {
             e.printStackTrace();
@@ -156,6 +164,52 @@ public class FileUtils {
             if(oFile != null){
                 try {
                     oFile.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public static void exportTempFile(String targetPath){
+        exportFile(Parameters.TEMPLATE_PATH_DEFAULT,Parameters.ENTITY_DEFAULT,targetPath);
+        exportFile(Parameters.TEMPLATE_PATH_DEFAULT,Parameters.MAPPER_CLASS_DEFAULT,targetPath);
+        exportFile(Parameters.TEMPLATE_PATH_DEFAULT,Parameters.MAPPER_XML_DEFAULT,targetPath);
+        exportFile(Parameters.TEMPLATE_PATH_DEFAULT,Parameters.SERVICE_DEFAULT,targetPath);
+        exportFile(Parameters.TEMPLATE_PATH_DEFAULT,Parameters.SERVICE_IMPL_DEFAULT,targetPath);
+    }
+
+    public static void exportFile(String source,String name,String targetPath){
+        InputStream in = null;
+        OutputStream out = null;
+        try {
+            FileUtils fu = new FileUtils();
+            URL location = fu.getClass().getResource(source+name);
+            in = location.openStream();
+            byte[] buffer = new byte[in.available()];
+            in.read(buffer);
+            File targetFile = new File(targetPath+name);
+            OutputStream outStream = new FileOutputStream(targetFile);
+            outStream.write(buffer);
+            out = new FileOutputStream(targetPath);
+            byte[] buf = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = in.read(buf)) > 0) {
+                out.write(buf, 0, bytesRead);
+            }
+        }catch (IOException e){
+            e.printStackTrace();
+        }finally {
+            if(in != null){
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if(out != null){
+                try {
+                    out.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

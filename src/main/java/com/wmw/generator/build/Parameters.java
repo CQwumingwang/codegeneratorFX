@@ -1,6 +1,5 @@
 package com.wmw.generator.build;
 
-import java.io.File;
 
 /**
  * @ClassName Parameters
